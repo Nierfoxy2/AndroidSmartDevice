@@ -4,12 +4,12 @@
 
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-
     <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
 
-    <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="true" />
 
     <application
         android:allowBackup="true"
@@ -21,9 +21,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AndroidSmartDevice"
         tools:targetApi="31">
-
-
-
+        <activity
+            android:name=".DeviceControlActivity"
+            android:exported="false"
+            android:label="@string/title_activity_device_control"
+            android:theme="@style/Theme.AndroidSmartDevice" />
         <activity
             android:name=".ScanActivity"
             android:exported="false"
