@@ -3,6 +3,8 @@ package fr.isen.leis.androidsmartdevice
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -91,14 +93,16 @@ fun DeviceScreen(
                     onClick = onConnectClick,
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2))
                 ) {
+                    Icon(Icons.Filled.Create, contentDescription = "Connect Icon", tint = Color.White)
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text("Se connecter", color = Color.White, fontSize = 16.sp)
                 }
             }
             else {
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("Votre Sapin De Noël", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1976D2))
+                Text("Connexion BLE", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1976D2))
                 Spacer(modifier = Modifier.height(24.dp))
-                Text("Vos Guirlandes", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                Text("LEDS", fontSize = 16.sp, fontWeight = FontWeight.Medium)
 
                 Row(
                     modifier = Modifier
@@ -132,7 +136,6 @@ fun DeviceScreen(
                 Divider(modifier = Modifier.padding(horizontal = 16.dp))
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // ✅ Abonnements séparés
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -141,7 +144,7 @@ fun DeviceScreen(
                         checked = isSubscribedButton3,
                         onCheckedChange = { onSubscribeToggleButton3(it) }
                     )
-                    Text("Abonnement notif bouton 1")
+                    Text("Abonnement au bouton 1")
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -151,10 +154,8 @@ fun DeviceScreen(
                         checked = isSubscribedButton1,
                         onCheckedChange = { onSubscribeToggleButton1(it) }
                     )
-                    Text("Abonnement notif bouton 3")
+                    Text("Abonnement au bouton 3")
                 }
-
-
 
                 Spacer(modifier = Modifier.height(24.dp))
                 Text("Compteur bouton 1 : $counterButton3", fontSize = 16.sp, fontWeight = FontWeight.Bold)
@@ -162,6 +163,8 @@ fun DeviceScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(onClick = onResetCounter) {
+                    Icon(Icons.Filled.Refresh, contentDescription = "Reset Icon", tint = Color.White)
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text("Réinitialiser les compteurs")
                 }
             }
