@@ -120,6 +120,7 @@ class DeviceControlActivity : ComponentActivity() {
                     }
                 }
             }
+
         })
     }
 

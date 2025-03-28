@@ -77,11 +77,11 @@ fun DeviceScreen(
                             .fillMaxWidth(),
                         horizontalAlignment = Alignment.Start
                     ) {
-                        Text("🔌 Périphérique détecté", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1976D2))
+                        Text("Périphérique détecté", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1976D2))
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("📡 Nom : $name", fontSize = 16.sp)
-                        Text("🔑 Adresse : $address", fontSize = 14.sp, color = Color.Gray)
-                        Text("📶 RSSI : $rssi dBm", fontSize = 14.sp, color = Color.Gray)
+                        Text("Nom : $name", fontSize = 16.sp)
+                        Text("Adresse : $address", fontSize = 14.sp, color = Color.Gray)
+                        Text("RSSI : $rssi dBm", fontSize = 14.sp, color = Color.Gray)
                         Spacer(modifier = Modifier.height(16.dp))
                         Text("⚠️ $connectionStatus", fontSize = 14.sp, color = Color(0xFFB71C1C))
                     }

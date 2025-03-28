@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -67,7 +68,7 @@ fun ScanScreen(
                 )
                 IconButton(onClick = { if (isScanning) onStopScan() else onStartScan() }) {
                     Icon(
-                        imageVector = if (isScanning) Icons.Filled.Star else Icons.Filled.PlayArrow,
+                        imageVector = if (isScanning) Icons.Filled.Close else Icons.Filled.PlayArrow,
                         contentDescription = "Start/Stop Scan",
                         tint = Color(0xFF1976D2),
                         modifier = Modifier.size(32.dp)

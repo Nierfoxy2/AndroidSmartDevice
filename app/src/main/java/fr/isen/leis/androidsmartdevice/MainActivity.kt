@@ -65,7 +65,7 @@ fun HomeScreen() {
             Spacer(modifier = Modifier.height(60.dp))
 
             Text(
-                text = "Bienvenue dans votre application\nSmart Device",
+                text = "Bienvenue dans Android\nSmart Device",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1976D2),
@@ -75,7 +75,7 @@ fun HomeScreen() {
             Spacer(modifier = Modifier.height(20.dp))
 
             Text(
-                text = "Pour démarrer vos interactions avec les appareils BLE\nenvironnants cliquer sur commencer",
+                text = "Pour démarrer les interactions BLE\nenvironnants cliquer sur commencer",
                 fontSize = 14.sp,
                 color = Color.Gray,
                 textAlign = TextAlign.Center
