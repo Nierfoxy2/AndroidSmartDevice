@@ -81,7 +81,7 @@ fun HomeScreen() {
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(130.dp))
+            Spacer(modifier = Modifier.height(110.dp))
 
             Image(
                 painter = painterResource(id = R.drawable.bl_icon),
@@ -89,7 +89,7 @@ fun HomeScreen() {
                 modifier = Modifier.size(160.dp)
             )
 
-            Spacer(modifier = Modifier.height(110.dp))
+            Spacer(modifier = Modifier.height(90.dp))
 
             Button(
                 onClick = {

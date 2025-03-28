@@ -1,48 +1,54 @@
-package fr.isen.leis.androidsmartdevice
-
+import android.app.Activity
+import android.app.AlertDialog
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.content.Context
+import android.content.Intent
+import android.location.LocationManager
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Bluetooth
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import fr.isen.improta.androidsmartdevice.screen.ScanActivity
+import fr.isen.improta.androidsmartdevice.ui.theme.AndroidSmartDeviceTheme
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            AndroidSmartDeviceTheme {
+                HomeScreen()
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DeviceScreen(
-    name: String,
-    address: String,
-    rssi: Int,
-    onBack: () -> Unit,
-    onConnectClick: () -> Unit,
-    connectionStatus: String,
-    isConnected: Boolean,
-    ledStates: List<Boolean>,
-    onLedToggle: (Int) -> Unit,
-    isSubscribed: Boolean,
-    onSubscribeToggle: (Boolean) -> Unit,
-    counter: Int
-) {
-    val ledColors = listOf(
-        Color(0xFF1976D2), // LED 1 - Bleu
-        Color(0xFF4CAF50), // LED 2 - Vert
-        Color(0xFFF44336)  // LED 3 - Rouge
-    )
+fun HomeScreen() {
+    val context = LocalContext.current
+    val activity = context as? Activity
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("AndroidSmartDevice") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Retour", tint = Color.White)
-                    }
-                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color(0xFF1976D2),
                     titleContentColor = Color.White
@@ -52,78 +58,107 @@ fun DeviceScreen(
     ) { innerPadding ->
         Column(
             modifier = Modifier
+                .fillMaxSize()
                 .padding(innerPadding)
-                .padding(24.dp)
-                .fillMaxSize(),
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (!isConnected) {
-                Spacer(modifier = Modifier.height(24.dp))
-                Text("Connexion à :", fontSize = 20.sp)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(name, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                Text("Adresse : $address", fontSize = 14.sp)
-                Text("RSSI : $rssi dBm", fontSize = 14.sp)
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(connectionStatus, fontSize = 14.sp, color = Color.Gray)
-                Spacer(modifier = Modifier.height(24.dp))
-                Button(onClick = onConnectClick) {
-                    Text("Se connecter")
-                }
-            } else {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("Votre Sapin De Noël", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1976D2))
-                Spacer(modifier = Modifier.height(24.dp))
-                Text("Vos Guirlandes", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+            Icon(
+                imageVector = Icons.Default.Bluetooth,
+                contentDescription = "Bluetooth Icon",
+                tint = Color(0xFF1976D2),
+                modifier = Modifier.size(80.dp)
+            )
 
-                Row(
-                    modifier = Modifier
-                        .padding(vertical = 24.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    ledStates.forEachIndexed { index, isOn ->
-                        val color = ledColors.getOrNull(index) ?: Color.Gray
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Button(
-                                onClick = { onLedToggle(index) },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = if (isOn) color else Color.LightGray
-                                ),
-                                modifier = Modifier
-                                    .height(64.dp)
-                                    .width(100.dp) // un peu plus large
-                            ) {
-                                Text(
-                                    text = "LED ${index + 1}",
-                                    color = Color.White,
-                                    maxLines = 1 // 👈 empêche retour à la ligne
-                                )
-                            }
+            Spacer(modifier = Modifier.height(16.dp))
 
+            Text(
+                text = "Bienvenue dans votre application\nSmart Device",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1976D2),
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "Pour démarrer vos interactions avec les appareils BLE environnants, cliquez sur commencer.",
+                fontSize = 14.sp,
+                color = Color.Gray,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(60.dp))
+
+            Image(
+                painter = painterResource(id = R.drawable.ble2),
+                contentDescription = "Bluetooth Logo",
+                modifier = Modifier.size(140.dp)
+            )
+
+            Spacer(modifier = Modifier.height(50.dp))
+
+            Button(
+                onClick = {
+                    val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+                    val bluetoothAdapter = bluetoothManager.adapter
+
+                    val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                    val isLocationEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                            locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+
+                    when {
+                        bluetoothAdapter == null -> {
+                            showAlert(context, "Bluetooth non supporté", "Ce dispositif ne supporte pas le Bluetooth.")
+                        }
+                        !bluetoothAdapter.isEnabled -> {
+                            showAlert(context, "Bluetooth désactivé", "Veuillez activer le Bluetooth pour continuer.")
+                        }
+                        !isLocationEnabled -> {
+                            showAlert(context, "Localisation désactivée", "Veuillez activer la localisation pour scanner les appareils BLE.")
+                        }
+                        else -> {
+                            context.startActivity(Intent(context, ScanActivity::class.java))
                         }
                     }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "Abonnez vous pour recevoir\nle nombre d'incrémentation",
-                        fontSize = 14.sp
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Checkbox(
-                        checked = isSubscribed,
-                        onCheckedChange = { onSubscribeToggle(it) }
-                    )
-                    Text("RECEVOIR")
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-                Text("Nombre : $counter", fontSize = 20.sp)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .padding(horizontal = 24.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2))
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = "Start Icon",
+                    tint = Color.White
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "COMMENCER",
+                    color = Color.White,
+                    fontSize = 16.sp
+                )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Icon(
+                imageVector = Icons.Default.LocationOn,
+                contentDescription = "Location Icon",
+                tint = Color.Gray,
+                modifier = Modifier.size(40.dp)
+            )
         }
     }
+}
+
+fun showAlert(context: Context, title: String, message: String) {
+    AlertDialog.Builder(context)
+        .setTitle(title)
+        .setMessage(message)
+        .setPositiveButton("OK", null)
+        .show()
 }

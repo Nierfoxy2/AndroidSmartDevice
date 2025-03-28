@@ -1,53 +1,34 @@
 package fr.isen.leis.androidsmartdevice
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCallback
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothManager
+import android.bluetooth.*
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import fr.isen.leis.androidsmartdevice.ui.theme.AndroidSmartDeviceTheme
-import fr.isen.leis.androidsmartdevice.ScanActivity
-import java.util.UUID
 
 class DeviceControlActivity : ComponentActivity() {
 
     private var gatt: BluetoothGatt? = null
     private var ledChar: BluetoothGattCharacteristic? = null
-    private var notifChar: BluetoothGattCharacteristic? = null
+    private var notifCharButton1: BluetoothGattCharacteristic? = null
+    private var notifCharButton3: BluetoothGattCharacteristic? = null
 
     private val ledStates = mutableStateListOf(false, false, false)
-    private val isSubscribed = mutableStateOf(false)
-    private val counterValue = mutableStateOf(0)
     private val connectionState = mutableStateOf("Appuyez sur le bouton pour vous connecter")
+
+    private val counterButton1 = mutableStateOf(0)
+    private val counterButton3 = mutableStateOf(0)
+
+    private val isSubscribedButton1 = mutableStateOf(false)
+    private val isSubscribedButton3 = mutableStateOf(false)
+
+    private var skipNextNotification1 = false
+    private var skipNextNotification3 = false
 
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,9 +50,16 @@ class DeviceControlActivity : ComponentActivity() {
                     isConnected = connectionState.value.contains("✅"),
                     ledStates = ledStates,
                     onLedToggle = { toggleLed(it) },
-                    isSubscribed = isSubscribed.value,
-                    onSubscribeToggle = { toggleNotifications(it) },
-                    counter = counterValue.value
+                    isSubscribedButton1 = isSubscribedButton1.value,
+                    isSubscribedButton3 = isSubscribedButton3.value,
+                    onSubscribeToggleButton1 = { toggleNotificationsFor(notifCharButton1, it) },
+                    onSubscribeToggleButton3 = { toggleNotificationsFor(notifCharButton3, it) },
+                    counterButton1 = counterButton1.value,
+                    counterButton3 = counterButton3.value,
+                    onResetCounter = {
+                        counterButton1.value = 0
+                        counterButton3.value = 0
+                    }
                 )
             }
         }
@@ -97,15 +85,39 @@ class DeviceControlActivity : ComponentActivity() {
             override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
                 val service3 = gatt.services.getOrNull(2)
                 val service4 = gatt.services.getOrNull(3)
+
                 ledChar = service3?.characteristics?.getOrNull(0)
-                notifChar = service4?.characteristics?.getOrNull(0)
-                Log.d("BLE", "LED char = $ledChar, Notif char = $notifChar")
+                notifCharButton1 = service3?.characteristics?.getOrNull(1)
+                notifCharButton3 = service4?.characteristics?.getOrNull(0)
+
+                Log.d("BLE", "LED char = $ledChar")
+                Log.d("BLE", "Notif bouton 1 = $notifCharButton1")
+                Log.d("BLE", "Notif bouton 3 = $notifCharButton3")
             }
 
             override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
-                if (characteristic == notifChar) {
-                    counterValue.value++
-                    Log.d("BLE", "Compteur reçu = ${counterValue.value}")
+                when (characteristic) {
+                    notifCharButton1 -> {
+                        if (skipNextNotification1) {
+                            skipNextNotification1 = false
+                            Log.d("BLE", "Notification bouton 1 ignorée")
+                            return
+                        }
+                        val value = characteristic.value.firstOrNull()?.toInt() ?: return
+                        counterButton1.value = value
+                        Log.d("BLE", "📥 Bouton 1 → compteur = $value")
+                    }
+
+                    notifCharButton3 -> {
+                        if (skipNextNotification3) {
+                            skipNextNotification3 = false
+                            Log.d("BLE", "Notification bouton 3 ignorée")
+                            return
+                        }
+                        val value = characteristic.value.firstOrNull()?.toInt() ?: return
+                        counterButton3.value = value
+                        Log.d("BLE", "📥 Bouton 3 → compteur = $value")
+                    }
                 }
             }
         })
@@ -114,18 +126,47 @@ class DeviceControlActivity : ComponentActivity() {
     @SuppressLint("MissingPermission")
     private fun toggleLed(index: Int) {
         val char = ledChar ?: return
-        val isOn = ledStates[index]
-        val newValue = if (isOn) 0x00 else (index + 1)
-        char.value = byteArrayOf(newValue.toByte())
+        val alreadyOn = ledStates[index]
+        for (i in ledStates.indices) {
+            ledStates[i] = false
+        }
+        val valueToSend = if (alreadyOn) 0x00 else (index + 1)
+        char.value = byteArrayOf(valueToSend.toByte())
         gatt?.writeCharacteristic(char)
-        ledStates[index] = !isOn
+        if (!alreadyOn) {
+            ledStates[index] = true
+        }
     }
 
     @SuppressLint("MissingPermission")
-    private fun toggleNotifications(enable: Boolean) {
-        val char = notifChar ?: return
-        gatt?.setCharacteristicNotification(char, enable)
-        isSubscribed.value = enable
+    private fun toggleNotificationsFor(
+        characteristic: BluetoothGattCharacteristic?,
+        enable: Boolean
+    ) {
+        if (characteristic == null) return
+
+        gatt?.setCharacteristicNotification(characteristic, enable)
+
+        val descriptor = characteristic.getDescriptor(
+            characteristic.descriptors.firstOrNull()?.uuid ?: return
+        )
+        descriptor.value = if (enable)
+            BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+        else
+            BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE
+
+        gatt?.writeDescriptor(descriptor)
+
+        when (characteristic) {
+            notifCharButton1 -> {
+                isSubscribedButton1.value = enable
+                if (enable) skipNextNotification1 = true
+            }
+            notifCharButton3 -> {
+                isSubscribedButton3.value = enable
+                if (enable) skipNextNotification3 = true
+            }
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -134,5 +175,3 @@ class DeviceControlActivity : ComponentActivity() {
         gatt?.close()
     }
 }
-
-
